@@ -7,6 +7,8 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(Lahman)
+
 ```
 
 # Lab report #4 - instructions
@@ -16,6 +18,9 @@ Follow the instructions posted at <https://ds202-at-isu.github.io/labs.html> for
 All submissions to the github repo will be automatically uploaded for grading once the due date is passed. Submit a link to your repository on Canvas (only one submission per team) to signal to the instructors that you are done with your submission.
 
 # Lab 4: Scraping (into) the Hall of Fame
+```{r}
+head(HallOfFame, 3)
+```
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -29,3 +34,25 @@ hof %>%
   xlim(c(2000, 2022)) +
   ylab("Percent of votes")
 ```
+
+```{r}
+HallOfFame %>% 
+  ggplot(aes(x = yearID, fill = inducted)) +
+  geom_bar() +
+  xlim(c(1936, 2022))
+```
+
+```{r}
+library(rvest)
+url <- "https://www.baseball-reference.com/awards/hof_2023.shtml"
+html <- read_html(url)
+tables <- html_table(html)
+head(tables[[1]], 3)
+```
+
+```{r}
+write.csv(tables[[1]], "temp.csv", row.names=FALSE)
+backin <- readr::read_csv("temp.csv", skip = 1, show_col_types =FALSE)
+head(backin, 3)
+```
+
