@@ -1,0 +1,66 @@
+---
+title: "progress-report-cjlarsen19"
+output: html_document
+date: "2024-04-17"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+
+
+```{r}
+library(rvest)
+url <- "https://www.baseball-reference.com/awards/hof_2023.shtml"
+html <- read_html(url)
+head(html)
+tables <- html %>% html_table(fill=TRUE)
+tables %>% str()
+```
+```{r}
+library(rvest)
+
+# Specify the URL of the Baseball-Reference Hall of Fame page
+url <- "https://www.baseball-reference.com/awards/hof_2023.shtml"
+
+# Read the HTML content from the specified URL
+html <- read_html(url)
+
+# View the structure of the HTML content (optional)
+# head(html)
+
+# Extract tables from the HTML content
+tables <- html %>% html_table(fill = TRUE)
+
+# Check the structure of extracted tables
+str(tables)
+
+# View the extracted tables (if multiple tables exist)
+# tables
+
+```
+
+```{r}
+data <- tables[[1]]
+data %>% head()
+```
+```{r}
+write.csv(tables[[1]], "temp.csv", row.names=FALSE)
+backin <- readr::read_csv("temp.csv", skip = 1, show_col_types =FALSE)
+head(backin, 3)
+```
+
+```{r}
+library(dplyr)
+backin <- backin %>% 
+  select(Name,Votes)
+head(backin)
+
+```
+```{r}
+
+```
+
