@@ -9,3 +9,103 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+hof <- Lahman::HallOfFame
+hof %>% 
+  ggplot(aes(x = yearID, y = votes/needed*100, group=playerID)) +
+  geom_hline(yintercept = 100, colour="grey70") + 
+  geom_line() +
+  geom_point(aes(colour = "inducted"), 
+    data = hof %>% filter(inducted=="Y")) +
+  xlim(c(2000, 2022)) +
+  ylab("Percent of votes")
+```
+```{r}
+library(Lahman)
+head(HallOfFame, 3)
+```
+
+```{r}
+#install.packages("rvest")
+library(rvest)
+# parse the data
+library(dplyr)
+
+# Read the HTML from the URL
+url <- 'https://www.baseball-reference.com/awards/hof_2023.shtml'
+html <- read_html(url)
+
+# Parse the tables from the HTML
+tables <- html %>% html_table(fill = TRUE)
+
+tables %>% str()
+```
+
+```{r}
+# Extract the desired table
+scraped_data <- tables[[1]]
+
+colnames(scraped_data) <- c("playerID", "yearID", "votedBy", "ballots", "needed", "votes", "inducted", "category", "needed_note")
+scraped_data=scraped_data[-1,]
+
+scraped_data$votes=scraped_data$ballots
+scraped_data$playerID=scraped_data$yearID
+scraped_data$yearID=2023
+scraped_data$category='Player'
+scraped_data$needed_note=NA
+scraped_data$votedBy='BBWAA'
+scraped_data$ballots=389
+scraped_data$needed=292
+scraped_data$inducted <- ifelse(scraped_data$votes > scraped_data$needed, "Y", "N")
+
+scraped_data <- scraped_data[, 1:9]
+
+scraped_data
+```
+
+```{r}
+# Keep only relevant columns
+scraped_data <- scraped_data[, 1:9]
+
+# Clean playerID column
+scraped_data$playerID <- gsub("X-", "", scraped_data$playerID)
+
+# Update specific player names
+scraped_data$playerID[which(scraped_data$name == "Billy Wagner")] <- "3"
+scraped_data$playerID[which(scraped_data$name == "Todd Helton HOF")] <- "Todd Helton"
+scraped_data$playerID[which(scraped_data$name == "Carlos Beltrán")] <- "6"
+scraped_data$playerID[which(scraped_data$name == "Francisco Rodríguez")] <- "15"
+
+scraped_data
+```
+
+
+```{r}
+# Load Lahman dataset
+library(Lahman)
+data("People")
+
+# Merge with Lahman dataset to get correct playerIDs
+scraped_data <- scraped_data %>%
+  left_join(People, by = c("name" = "nameGiven")) %>%
+  select(playerID = playerID.x, name, yearID, votedBy, ballots, needed, votes, inducted, category) 
+
+# Replace NAs in playerID
+scraped_data$playerID[is.na(scraped_data$playerID)] <- "dickera01" # For missing playerID
+scraped_data$playerID[which(scraped_data$name == "JJ Hardy")] <- "hardyjj01" # For JJ Hardy
+
+# Print the resulting data
+scraped_data
+colnames(scraped_data)
+colnames(HallOfFame)
+```
+
+```{r}
+HallOfFame <- rbind(HallOfFame, scraped_data)
+tail(HallOfFame)
+
+HallOfFame %>% 
+  ggplot(aes(x = yearID, fill = inducted)) +
+  geom_bar() +
+  xlim(c(1936, 2023))
+```
