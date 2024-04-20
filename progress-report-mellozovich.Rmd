@@ -88,7 +88,6 @@ people_data <- Lahman::People %>%
 matched_data <- left_join(scraped_data, people_data, by = c("playerID" = "full_name")) %>%
   select(playerID.y) 
 
-# Replace NAs in playerID
 scraped_data$playerID[is.na(scraped_data$playerID)] <- "dickera01"
 scraped_data$playerID[which(scraped_data$name == "JJ Hardy")] <- "hardyjj01"
 
