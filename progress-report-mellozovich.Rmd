@@ -20,6 +20,7 @@ hof %>%
   xlim(c(2000, 2022)) +
   ylab("Percent of votes")
 ```
+
 ```{r}
 library(Lahman)
 head(HallOfFame, 3)
@@ -35,9 +36,7 @@ library(dplyr)
 url <- 'https://www.baseball-reference.com/awards/hof_2023.shtml'
 html <- read_html(url)
 
-# Parse the tables from the HTML
-tables <- html %>% html_table(fill = TRUE)
-
+tables <- html %>% html_table(fill=TRUE)
 tables %>% str()
 ```
 
@@ -58,8 +57,6 @@ scraped_data$ballots=389
 scraped_data$needed=292
 scraped_data$inducted <- ifelse(scraped_data$votes > scraped_data$needed, "Y", "N")
 
-scraped_data <- scraped_data[, 1:9]
-
 scraped_data
 ```
 
@@ -71,10 +68,9 @@ scraped_data <- scraped_data[, 1:9]
 scraped_data$playerID <- gsub("X-", "", scraped_data$playerID)
 
 # Update specific player names
-scraped_data$playerID[which(scraped_data$name == "Billy Wagner")] <- "3"
-scraped_data$playerID[which(scraped_data$name == "Todd Helton HOF")] <- "Todd Helton"
-scraped_data$playerID[which(scraped_data$name == "Carlos Beltrán")] <- "6"
-scraped_data$playerID[which(scraped_data$name == "Francisco Rodríguez")] <- "15"
+scraped_data$playerID[2] <- "Todd Helton"
+scraped_data$playerID[6] <- "Carlos Beltran"
+scraped_data$playerID[15] <- "Francisco Rodriguez"
 
 scraped_data
 ```
@@ -86,13 +82,15 @@ library(Lahman)
 data("People")
 
 # Merge with Lahman dataset to get correct playerIDs
-scraped_data <- scraped_data %>%
-  left_join(People, by = c("name" = "nameGiven")) %>%
-  select(playerID = playerID.x, name, yearID, votedBy, ballots, needed, votes, inducted, category) 
+people_data <- Lahman::People %>%
+  mutate(full_name = paste(nameFirst, nameLast, sep = " "))
+
+matched_data <- left_join(scraped_data, people_data, by = c("playerID" = "full_name")) %>%
+  select(playerID.y) 
 
 # Replace NAs in playerID
-scraped_data$playerID[is.na(scraped_data$playerID)] <- "dickera01" # For missing playerID
-scraped_data$playerID[which(scraped_data$name == "JJ Hardy")] <- "hardyjj01" # For JJ Hardy
+scraped_data$playerID[is.na(scraped_data$playerID)] <- "dickera01"
+scraped_data$playerID[which(scraped_data$name == "JJ Hardy")] <- "hardyjj01"
 
 # Print the resulting data
 scraped_data
