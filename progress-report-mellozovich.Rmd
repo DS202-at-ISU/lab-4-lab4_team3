@@ -107,3 +107,9 @@ HallOfFame %>%
   geom_bar() +
   xlim(c(1936, 2023))
 ```
+
+```{r}
+write.csv(HallOfFame, "HallOfFame.csv", row.names=FALSE)
+backin <- readr::read_csv("HallOfFame.csv",  show_col_types =FALSE)
+tail(backin,3)
+```
