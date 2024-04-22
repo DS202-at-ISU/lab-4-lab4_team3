@@ -61,6 +61,105 @@ head(backin)
 
 ```
 ```{r}
+library(Lahman)
+head(HallOfFame, 3)
+```
+```{r}
+backin <- backin %>% mutate(
+  yearID = 2023,
+  votedBy = "BBWAA",
+  ballots = 389,
+  needed = 292,
+  inducted = ifelse(Votes>=292, "Y", "N"),
+  category = NA, # don't know yet
+  needed_note = NA # not sure what would go here
+) %>% rename(
+  votes = Votes
+) 
+head(backin)
+```
+```{r}
+data("People", package = "Lahman")
+head(People)
+```
+```{r}
+People %>% filter(nameLast %in% c("Dickey", "Hardy")) %>%
+  select(playerID, nameFirst, nameLast)
+
+head(People)
+
+```
+```{r}
+People <- People %>% mutate(
+  `First Lastname`=paste(`nameFirst`, `nameLast`)
+)
+
+head(People)
+
+library(dplyr)
+
+# Perform anti-join
+result <- backin %>%
+  anti_join(
+    People %>% select(`First Lastname`, playerID),
+    by = c("Name" = "First Lastname")
+  )
+
+# View the resulting data frame
+print(result)
+
+
+
+```
+```{r}
+People %>% filter(nameLast %in% c("Dickey", "Hardy")) %>%
+  select(playerID, "First Lastname")
+
+head(People)
+```
+```{r}
+library(stringr)
+
+People <- People %>% mutate(
+  `First Lastname` = paste(
+    str_replace(nameFirst,"\\. ", "."),  # this uses a regular expression
+    nameLast)
+)
+People %>% filter(nameLast %in% c("Dickey", "Hardy")) %>%
+  select(playerID, `First Lastname`)
+
+
+backin$Name <- gsub("X-", "", backin$Name)
+backin$Name[2] <- "Todd Helton"
+backin$Name[6] <- "Carlos Beltran"
+backin$Name[15] <- "Francisco Rodriguez"
+
+
+head(backin)
+head(People)
+
+
+```
+```{r}
+library(dplyr)
+
+# Assuming `backin` and `People` are your data frames
+result <- left_join(
+  backin,
+  People %>% select(`First Lastname`, playerID),  # Select relevant columns from People
+  by = c("Name" = "First Lastname")     # Specify join columns
+)
+
+result
+
+
+```
+
+```{r}
+result <- result[,c("playerID", "yearID", "votedBy", "ballots", "needed", "votes", "inducted", "category", "needed_note")]
+
+head(HallOfFame, 3)
+head(result)
 
 ```
 
